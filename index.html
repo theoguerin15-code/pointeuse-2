@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pointeuse Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f14;
+    --surface: #16161e;
+    --card: #1c1c28;
+    --border: #2a2a3a;
+    --border-light: #383850;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6584;
+    --warn: #f0a500;
+    --text: #e8e6f0;
+    --muted: #7070a0;
+    --dimmed: #3a3a55;
+    --success: #00d4aa;
+    --danger: #ff6584;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.5; transform:scale(1.4); }
+  }
+  .header-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* NAV TABS */
+  .tab-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.5rem;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  /* MAIN */
+  .main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* POINTAGE TAB */
+  .punch-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  .card-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* BIG CLOCK */
+  .big-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin: 0.5rem 0 0.25rem;
+  }
+  .big-date {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* STATUS BADGE */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+  .status-badge.out { background: rgba(112,112,160,0.15); color: var(--muted); }
+  .status-badge.in  { background: rgba(0,212,170,0.15); color: var(--success); }
+  .status-dot { width:6px; height:6px; border-radius:50%; background: currentColor; }
+  .status-badge.in .status-dot { animation: pulse 1.5s infinite; }
+
+  /* PUNCH BUTTONS */
+  .punch-btn {
+    width: 100%;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.9rem;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    margin-bottom: 0.75rem;
+  }
+  .punch-btn:last-child { margin-bottom: 0; }
+  .btn-in { background: rgba(0,212,170,0.15); color: var(--success); border: 1px solid rgba(0,212,170,0.3); }
+  .btn-in:hover:not(:disabled) { background: rgba(0,212,170,0.25); }
+  .btn-out { background: rgba(255,101,132,0.15); color: var(--danger); border: 1px solid rgba(255,101,132,0.3); }
+  .btn-out:hover:not(:disabled) { background: rgba(255,101,132,0.25); }
+  .punch-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* DAY PROGRESS */
+  .limit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+  .limit-label { color: var(--muted); }
+  .limit-value { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+  .progress-bar-wrap {
+    background: var(--dimmed);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.5s ease, background 0.3s;
+  }
+
+  /* METRICS GRID */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+  }
+  .metric-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+  .metric-value.accent  { color: var(--accent); }
+  .metric-value.success { color: var(--success); }
+  .metric-value.warn    { color: var(--warn); }
+  .metric-value.danger  { color: var(--danger); }
+  .metric-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  /* SETTINGS ROW */
+  .settings-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .settings-field { flex: 1; min-width: 160px; }
+  .settings-field label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .settings-field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    padding: 0.55rem 0.75rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .settings-field input:focus { border-color: var(--accent); }
+
+  /* HISTORY TAB */
+  .history-table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  thead tr { border-bottom: 1px solid var(--border); }
+  th {
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.75rem 1rem;
+  }
+  td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+  tbody tr:hover td { background: rgba(108,99,255,0.04); }
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .badge-ok  { background: rgba(0,212,170,0.15); color: var(--success); }
+  .badge-sup { background: rgba(240,165,0,0.15); color: var(--warn); }
+  .badge-over { background: rgba(255,101,132,0.15); color: var(--danger); }
+  .delete-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .delete-btn:hover { color: var(--danger); background: rgba(255,101,132,0.1); }
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4; }
+
+  /* RÉCAP TAB */
+  .recap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .recap-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .recap-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+  .recap-card.c-accent::before  { background: var(--accent); }
+  .recap-card.c-success::before { background: var(--success); }
+  .recap-card.c-warn::before    { background: var(--warn); }
+  .recap-card.c-danger::before  { background: var(--danger); }
+  .recap-card-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .recap-card-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+  .recap-card-sub { font-size: 0.75rem; color: var(--muted); }
+
+  .month-bar-chart { margin-top: 1rem; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+  }
+  .bar-day-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    min-width: 32px;
+    text-align: right;
+  }
+  .bar-track {
+    flex: 1;
+    background: var(--dimmed);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill-normal  { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+  .bar-fill-sup     { height: 100%; background: var(--warn);   border-radius: 999px; transition: width 0.4s ease; }
+  .bar-fill-over    { height: 100%; background: var(--danger); border-radius: 999px; transition: width 0.4s ease; }
+  .bar-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    min-width: 40px;
+  }
+
+  /* MONTH NAV */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    height: 34px; width: 34px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .month-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 130px;
+    text-align: center;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* CURRENT TIMER */
+  .current-session {
+    background: rgba(108,99,255,0.08);
+    border: 1px solid rgba(108,99,255,0.25);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .session-label { font-size: 0.78rem; color: var(--muted); }
+  .session-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* EXPORT BTN */
+  .export-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.5rem 1rem;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  @media (max-width: 720px) {
+    .punch-layout { grid-template-columns: 1fr; }
+    .main { padding: 1rem; }
+    .tab-btn { padding: 0.75rem 0.8rem; font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    POINTEUSE<span style="color:var(--muted)">.PRO</span>
+  </div>
+  <div class="header-clock" id="header-clock">--:--:--</div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('pointer')">⏱ Pointer</button>
+  <button class="tab-btn" onclick="switchTab('historique')">📋 Historique</button>
+  <button class="tab-btn" onclick="switchTab('recap')">📊 Récapitulatif</button>
+</nav>
+
+<main class="main">
+
+  <!-- ═══════════════════════════ ONGLET POINTER ═══════════════════════════ -->
+  <div id="tab-pointer" class="tab-content active">
+
+    <div class="settings-row">
+      <div class="settings-field">
+        <label>Limite journalière (h)</label>
+        <input type="number" id="daily-limit" value="7" min="1" max="24" step="0.5" onchange="saveSettings()" />
+      </div>
+      <div class="settings-field">
+        <label>Limite mensuelle (h)</label>
+        <input type="number" id="monthly-limit" value="151.67" min="1" max="744" step="0.5" onchange="saveSettings()" />
+      </div>
+      <div class="settings-field">
+        <label>Seuil heures sup. (h)</label>
+        <input type="number" id="extra-threshold" value="7" min="1" max="24" step="0.5" onchange="saveSettings()" />
+      </div>
+    </div>
+
+    <div class="punch-layout">
+
+      <!-- LEFT: CLOCK + BUTTONS -->
+      <div class="card">
+        <p class="card-title">Horloge temps réel</p>
+        <div class="big-clock" id="main-clock">00:00:00</div>
+        <div class="big-date" id="main-date">--</div>
+        <div id="status-badge" class="status-badge out">
+          <span class="status-dot"></span>
+          <span id="status-text">Non pointé</span>
+        </div>
+        <div id="current-session-box" class="current-session" style="display:none;">
+          <div>
+            <div class="session-label">Session en cours</div>
+            <div class="session-time" id="session-timer">00:00:00</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="session-label">Entrée à</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:0.95rem;" id="session-start-label">--:--</div>
+          </div>
+        </div>
+        <button class="punch-btn btn-in" id="btn-in" onclick="punchIn()">▶ Pointer Entrée</button>
+        <button class="punch-btn btn-out" id="btn-out" onclick="punchOut()" disabled>■ Pointer Sortie</button>
+      </div>
+
+      <!-- RIGHT: METRICS + PROGRESS -->
+      <div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Heures aujourd'hui</div>
+            <div class="metric-value accent" id="m-today">0h00</div>
+            <div class="metric-sub" id="m-today-sub">/ <span id="m-daily-lim">7h00</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Heures ce mois</div>
+            <div class="metric-value success" id="m-month">0h00</div>
+            <div class="metric-sub" id="m-month-sub">/ <span id="m-month-lim">151h40</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">H. complémentaires</div>
+            <div class="metric-value warn" id="m-extra">0h00</div>
+            <div class="metric-sub">ce mois</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Sessions today</div>
+            <div class="metric-value" id="m-sessions">0</div>
+            <div class="metric-sub" id="m-last-punch">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="card-title">Progression journée</p>
+          <div class="limit-row">
+            <span class="limit-label">Heures travaillées</span>
+            <span class="limit-value" id="prog-day-val">0h00 / 7h00</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="prog-day-bar" style="width:0%; background:var(--accent);"></div>
+          </div>
+
+          <p class="card-title" style="margin-top:0.5rem;">Progression mensuelle</p>
+          <div class="limit-row">
+            <span class="limit-label">Heures ce mois</span>
+            <span class="limit-value" id="prog-month-val">0h00 / 151h40</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="prog-month-bar" style="width:0%; background:var(--success);"></div>
+          </div>
+
+          <p class="card-title" style="margin-top:0.5rem;">H. complémentaires mensuel</p>
+          <div class="limit-row">
+            <span class="limit-label">Au-delà du seuil</span>
+            <span class="limit-value" id="prog-extra-val">0h00</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="prog-extra-bar" style="width:0%; background:var(--warn);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ ONGLET HISTORIQUE ═══════════════════════════ -->
+  <div id="tab-historique" class="tab-content">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+      <div class="month-nav">
+        <button class="nav-btn" onclick="changeHistMonth(-1)">‹</button>
+        <div class="month-label" id="hist-month-label">—</div>
+        <button class="nav-btn" onclick="changeHistMonth(+1)">›</button>
+      </div>
+      <button class="export-btn" onclick="exportCSV()">↓ Exporter CSV</button>
+    </div>
+    <div class="card history-table-wrap">
+      <div id="history-content"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ ONGLET RÉCAP ═══════════════════════════ -->
+  <div id="tab-recap" class="tab-content">
+    <div class="month-nav">
+      <button class="nav-btn" onclick="changeRecapMonth(-1)">‹</button>
+      <div class="month-label" id="recap-month-label">—</div>
+      <button class="nav-btn" onclick="changeRecapMonth(+1)">›</button>
+    </div>
+
+    <div class="recap-grid" id="recap-cards"></div>
+
+    <div class="card">
+      <p class="section-title">Détail par jour</p>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Normal</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div> Heures sup.</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--danger)"></div> Dépassement limite</div>
+      </div>
+      <div id="recap-bars" class="month-bar-chart"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ─── STATE ─── */
+let state = {
+  punchedIn: false,
+  currentEntry: null,
+  records: [],
+  settings: { dailyLimit: 7, monthlyLimit: 151.67, extraThreshold: 7 },
+  histMonth: new Date(),
+  recapMonth: new Date()
+};
+
+/* ─── INIT ─── */
+function init() {
+  const saved = localStorage.getItem('pointeuse_state');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      state.records = parsed.records || [];
+      state.settings = parsed.settings || state.settings;
+      state.punchedIn = parsed.punchedIn || false;
+      state.currentEntry = parsed.currentEntry || null;
+    } catch(e) {}
+  }
+  loadSettings();
+  setInterval(tick, 1000);
+  tick();
+  renderHistory();
+  renderRecap();
+}
+
+function saveState() {
+  localStorage.setItem('pointeuse_state', JSON.stringify({
+    records: state.records,
+    settings: state.settings,
+    punchedIn: state.punchedIn,
+    currentEntry: state.currentEntry
+  }));
+}
+
+function saveSettings() {
+  state.settings.dailyLimit = parseFloat(document.getElementById('daily-limit').value) || 7;
+  state.settings.monthlyLimit = parseFloat(document.getElementById('monthly-limit').value) || 151.67;
+  state.settings.extraThreshold = parseFloat(document.getElementById('extra-threshold').value) || 7;
+  saveState();
+  updateUI();
+}
+
+function loadSettings() {
+  document.getElementById('daily-limit').value = state.settings.dailyLimit;
+  document.getElementById('monthly-limit').value = state.settings.monthlyLimit;
+  document.getElementById('extra-threshold').value = state.settings.extraThreshold;
+}
+
+/* ─── PUNCH ─── */
+function punchIn() {
+  const now = new Date();
+  state.punchedIn = true;
+  state.currentEntry = { in: now.toISOString(), out: null };
+  document.getElementById('session-start-label').textContent = fmtTime(now);
+  document.getElementById('current-session-box').style.display = 'flex';
+  updateButtonStates();
+  saveState();
+  updateUI();
+}
+
+function punchOut() {
+  if (!state.punchedIn || !state.currentEntry) return;
+  const now = new Date();
+  state.currentEntry.out = now.toISOString();
+  const dur = (new Date(state.currentEntry.out) - new Date(state.currentEntry.in)) / 3600000;
+  state.records.push({
+    date: new Date(state.currentEntry.in).toISOString().slice(0,10),
+    in:   state.currentEntry.in,
+    out:  state.currentEntry.out,
+    duration: dur
+  });
+  state.punchedIn = false;
+  state.currentEntry = null;
+  document.getElementById('current-session-box').style.display = 'none';
+  updateButtonStates();
+  saveState();
+  updateUI();
+  renderHistory();
+  renderRecap();
+}
+
+function updateButtonStates() {
+  document.getElementById('btn-in').disabled  = state.punchedIn;
+  document.getElementById('btn-out').disabled = !state.punchedIn;
+  const badge = document.getElementById('status-badge');
+  const text  = document.getElementById('status-text');
+  if (state.punchedIn) {
+    badge.className = 'status-badge in';
+    text.textContent = 'En service';
+  } else {
+    badge.className = 'status-badge out';
+    text.textContent = 'Non pointé';
+  }
+}
+
+/* ─── TICK ─── */
+function tick() {
+  const now = new Date();
+  const timeStr = now.toTimeString().slice(0,8);
+  document.getElementById('main-clock').textContent = timeStr;
+  document.getElementById('header-clock').textContent = timeStr;
+  document.getElementById('main-date').textContent = fmtDate(now);
+
+  if (state.punchedIn && state.currentEntry) {
+    const elapsed = (now - new Date(state.currentEntry.in)) / 1000;
+    document.getElementById('session-timer').textContent = fmtDuration(elapsed);
+  }
+  updateUI();
+}
+
+/* ─── UPDATE UI ─── */
+function updateUI() {
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0,10);
+  const { dailyLimit, monthlyLimit, extraThreshold } = state.settings;
+
+  // Hours today
+  let todayHours = 0;
+  state.records.filter(r => r.date === todayStr).forEach(r => todayHours += r.duration);
+  if (state.punchedIn && state.currentEntry) {
+    todayHours += (now - new Date(state.currentEntry.in)) / 3600000;
+  }
+
+  // Hours this month
+  const ym = todayStr.slice(0,7);
+  let monthHours = 0, extraHours = 0;
+  let dayMap = {};
+  state.records.forEach(r => {
+    if (r.date.startsWith(ym)) {
+      monthHours += r.duration;
+      dayMap[r.date] = (dayMap[r.date]||0) + r.duration;
+    }
+  });
+  if (state.punchedIn && state.currentEntry && state.currentEntry.in.startsWith(ym)) {
+    const live = (now - new Date(state.currentEntry.in)) / 3600000;
+    monthHours += live;
+    dayMap[todayStr] = (dayMap[todayStr]||0) + live;
+  }
+
+  // Extra hours = sum of time beyond daily threshold each day
+  Object.values(dayMap).forEach(h => {
+    if (h > extraThreshold) extraHours += (h - extraThreshold);
+  });
+
+  const todaySessions = state.records.filter(r => r.date === todayStr).length;
+  const lastRec = state.records.slice(-1)[0];
+
+  // Metrics
+  document.getElementById('m-today').textContent = hhmm(todayHours);
+  document.getElementById('m-today').className = 'metric-value ' + (todayHours >= dailyLimit ? 'danger' : 'accent');
+  document.getElementById('m-daily-lim').textContent = hhmm(dailyLimit);
+  document.getElementById('m-month').textContent = hhmm(monthHours);
+  document.getElementById('m-month-lim').textContent = hhmm(monthlyLimit);
+  document.getElementById('m-extra').textContent = hhmm(extraHours);
+  document.getElementById('m-sessions').textContent = todaySessions + (state.punchedIn ? '+' : '');
+  document.getElementById('m-last-punch').textContent = lastRec ? 'Dernière sortie ' + fmtTime(new Date(lastRec.out)) : '—';
+
+  // Progress bars
+  const dayPct   = Math.min((todayHours / dailyLimit) * 100, 100);
+  const monthPct = Math.min((monthHours / monthlyLimit) * 100, 100);
+  const maxExtra = Math.max(extraHours, monthHours * 0.3, 1);
+  const extraPct = Math.min((extraHours / maxExtra) * 100, 100);
+
+  const dayBar = document.getElementById('prog-day-bar');
+  dayBar.style.width = dayPct + '%';
+  dayBar.style.background = todayHours >= dailyLimit ? 'var(--danger)' : todayHours >= extraThreshold ? 'var(--warn)' : 'var(--accent)';
+
+  document.getElementById('prog-day-val').textContent = hhmm(todayHours) + ' / ' + hhmm(dailyLimit);
+  document.getElementById('prog-month-bar').style.width = monthPct + '%';
+  document.getElementById('prog-month-val').textContent = hhmm(monthHours) + ' / ' + hhmm(monthlyLimit);
+  document.getElementById('prog-extra-bar').style.width = extraPct + '%';
+  document.getElementById('prog-extra-val').textContent = hhmm(extraHours);
+
+  document.getElementById('m-month-lim').textContent = hhmm(monthlyLimit);
+}
+
+/* ─── HISTORY ─── */
+let histOffset = 0;
+function changeHistMonth(d) {
+  histOffset += d;
+  state.histMonth = new Date(new Date().getFullYear(), new Date().getMonth() + histOffset, 1);
+  renderHistory();
+}
+function renderHistory() {
+  const ym = state.histMonth.toISOString().slice(0,7);
+  document.getElementById('hist-month-label').textContent = fmtMonth(state.histMonth);
+
+  const records = state.records.filter(r => r.date.startsWith(ym)).slice().reverse();
+  const { extraThreshold, dailyLimit } = state.settings;
+
+  const container = document.getElementById('history-content');
+  if (!records.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div>Aucun pointage ce mois</div></div>`;
+    return;
+  }
+
+  let html = `<table>
+    <thead><tr>
+      <th>Date</th><th>Entrée</th><th>Sortie</th><th>Durée</th><th>Statut</th><th></th>
+    </tr></thead><tbody>`;
+
+  records.forEach((r, i) => {
+    const idx = state.records.indexOf(r); // actual index for delete
+    const dur = r.duration;
+    let badge, badgeClass;
+    if (dur > dailyLimit) { badge = 'Dépassement'; badgeClass = 'badge-over'; }
+    else if (dur > extraThreshold) { badge = 'Heure sup.'; badgeClass = 'badge-sup'; }
+    else { badge = 'Normal'; badgeClass = 'badge-ok'; }
+
+    html += `<tr>
+      <td>${r.date}</td>
+      <td>${r.in ? fmtTime(new Date(r.in)) : '—'}</td>
+      <td>${r.out ? fmtTime(new Date(r.out)) : '<span style="color:var(--accent)">En cours</span>'}</td>
+      <td><strong>${hhmm(dur)}</strong></td>
+      <td><span class="badge ${badgeClass}">${badge}</span></td>
+      <td><button class="delete-btn" onclick="deleteRecord(${idx})" title="Supprimer">✕</button></td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function deleteRecord(idx) {
+  if (!confirm('Supprimer ce pointage ?')) return;
+  state.records.splice(idx, 1);
+  saveState();
+  renderHistory();
+  renderRecap();
+  updateUI();
+}
+
+/* ─── RECAP ─── */
+let recapOffset = 0;
+function changeRecapMonth(d) {
+  recapOffset += d;
+  state.recapMonth = new Date(new Date().getFullYear(), new Date().getMonth() + recapOffset, 1);
+  renderRecap();
+}
+function renderRecap() {
+  const now = new Date();
+  const ym = state.recapMonth.toISOString().slice(0,7);
+  document.getElementById('recap-month-label').textContent = fmtMonth(state.recapMonth);
+
+  const { dailyLimit, monthlyLimit, extraThreshold } = state.settings;
+  const monthRecs = state.records.filter(r => r.date.startsWith(ym));
+
+  let totalHours = 0, extraHours = 0, daysWorked = new Set(), overDays = 0;
+  let dayMap = {};
+  monthRecs.forEach(r => {
+    totalHours += r.duration;
+    daysWorked.add(r.date);
+    dayMap[r.date] = (dayMap[r.date]||0) + r.duration;
+  });
+  Object.values(dayMap).forEach(h => {
+    if (h > extraThreshold) extraHours += (h - extraThreshold);
+    if (h > dailyLimit) overDays++;
+  });
+  const avgPerDay = daysWorked.size ? totalHours / daysWorked.size : 0;
+
+  // Cards
+  document.getElementById('recap-cards').innerHTML = `
+    <div class="recap-card c-accent">
+      <div class="recap-card-label">Total heures</div>
+      <div class="recap-card-value" style="color:var(--accent)">${hhmm(totalHours)}</div>
+      <div class="recap-card-sub">/ ${hhmm(monthlyLimit)} attendues</div>
+    </div>
+    <div class="recap-card c-success">
+      <div class="recap-card-label">Jours travaillés</div>
+      <div class="recap-card-value" style="color:var(--success)">${daysWorked.size}</div>
+      <div class="recap-card-sub">Moy. ${hhmm(avgPerDay)} / jour</div>
+    </div>
+    <div class="recap-card c-warn">
+      <div class="recap-card-label">H. complémentaires</div>
+      <div class="recap-card-value" style="color:var(--warn)">${hhmm(extraHours)}</div>
+      <div class="recap-card-sub">au-delà de ${hhmm(extraThreshold)}/j</div>
+    </div>
+    <div class="recap-card c-danger">
+      <div class="recap-card-label">Jours dépassement</div>
+      <div class="recap-card-value" style="color:var(--danger)">${overDays}</div>
+      <div class="recap-card-sub">limite ${hhmm(dailyLimit)}/j dépassée</div>
+    </div>`;
+
+  // Bar chart per day
+  const maxH = Math.max(...Object.values(dayMap), extraThreshold, 1);
+  const sortedDays = Object.keys(dayMap).sort();
+  let barsHtml = '';
+  if (!sortedDays.length) {
+    barsHtml = '<div style="color:var(--muted); font-size:0.85rem; padding:1rem 0;">Aucune donnée ce mois.</div>';
+  } else {
+    sortedDays.forEach(d => {
+      const h = dayMap[d];
+      const pct = (h / maxH) * 100;
+      const isOver = h > dailyLimit;
+      const isSup  = h > extraThreshold && !isOver;
+      const cls    = isOver ? 'bar-fill-over' : isSup ? 'bar-fill-sup' : 'bar-fill-normal';
+      barsHtml += `<div class="bar-row">
+        <div class="bar-day-label">${d.slice(8)}</div>
+        <div class="bar-track"><div class="${cls}" style="width:${pct}%"></div></div>
+        <div class="bar-value">${hhmm(h)}</div>
+      </div>`;
+    });
+  }
+  document.getElementById('recap-bars').innerHTML = barsHtml;
+}
+
+/* ─── EXPORT CSV ─── */
+function exportCSV() {
+  const ym = state.histMonth.toISOString().slice(0,7);
+  const records = state.records.filter(r => r.date.startsWith(ym));
+  let csv = 'Date,Entrée,Sortie,Durée (h)\n';
+  records.forEach(r => {
+    csv += `${r.date},${r.in ? fmtTime(new Date(r.in)) : ''},${r.out ? fmtTime(new Date(r.out)) : ''},${r.duration.toFixed(2)}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pointage_${ym}.csv`;
+  a.click();
+}
+
+/* ─── TAB NAV ─── */
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'historique') renderHistory();
+  if (name === 'recap') renderRecap();
+}
+
+/* ─── FORMAT HELPERS ─── */
+function hhmm(h) {
+  if (isNaN(h) || h < 0) return '0h00';
+  const hrs = Math.floor(h);
+  const mins = Math.round((h - hrs) * 60);
+  return `${hrs}h${String(mins).padStart(2,'0')}`;
+}
+function fmtTime(d) {
+  return d.toTimeString().slice(0,5);
+}
+function fmtDate(d) {
+  return d.toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+function fmtMonth(d) {
+  return d.toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+}
+function fmtDuration(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = Math.floor(sec % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+/* ─── START ─── */
+init();
+updateButtonStates();
+</script>
+</body>
+</html>
